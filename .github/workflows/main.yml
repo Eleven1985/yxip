@@ -31,15 +31,15 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/camel52zhang/yxip.git
           git pull origin main --rebase
 
-      # ========== 步骤3：安装 Go 环境 ==========
+      # ========== 步骤3：安装 Go 环境（禁用缓存） ==========
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-          cache: true
+          cache: false  # 禁用缓存，避免 go.sum 缺失报错
 
-      # ========== 步骤4：下载依赖 ==========
-      - name: Install dependencies
+      # ========== 步骤4：下载依赖并生成 go.sum ==========
+      - name: Initialize Go module and download dependencies
         run: |
           go mod tidy
           go mod download
@@ -51,8 +51,9 @@ jobs:
       # ========== 步骤6：提交并推送变更 ==========
       - name: Commit and push changes
         run: |
-          if [ -n "$(git status --porcelain -- ip.txt)" ]; then
-            git add ip.txt
+          # 提交 ip.txt 和自动生成的 go.sum
+          if [ -n "$(git status --porcelain -- ip.txt go.sum)" ]; then
+            git add ip.txt go.sum
             git commit -m "🔄 Auto update: $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
 
             # 带重试的推送机制（最多3次）
