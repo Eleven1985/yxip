@@ -17,13 +17,20 @@ var urls = []struct {
 	URL      string
 	Tag      string // 提取标签：tr 或 li
 }{
-	{"https://cf.090227.xyz/ct?ips=6", "li"},
+	{"https://cf.090227.xyz/ct?ips=6", "tr"},
 	{"https://ip.164746.xyz", "tr"},
-	{"https://cf.090227.xyz/cu", "li"},
-	{"https://cf.090227.xyz/cmcc?ips=8", "li"},
-	{"https://ipdb.api.030101.xyz/?type=cfv4;proxy", "li"},
-	{"https://ipdb.api.030101.xyz/?type=bestproxy&country=true", "li"},
-	{"https://www.wetest.vip/page/cloudflare/address_v4.html", "li"},
+	{"https://cf.090227.xyz/cu", "tr"},
+	{"https://cf.090227.xyz/cmcc?ips=8", "tr"},
+	{"https://ipdb.api.030101.xyz/?type=cfv4;proxy", "tr"},
+	{"https://ipdb.api.030101.xyz/?type=bestproxy&country=true", "tr"},
+	{"https://www.wetest.vip/page/cloudflare/address_v4.html", "tr"},
+    {"https://stock.hostmonit.com/CloudFlareYes", "tr"},
+    {"https://api.uouin.com/cloudflare.html", "tr"},
+    {"https://vps789.com/cfip", "tr"},
+    {"https://www.byoip.top/", "tr"},
+    {"https://mrxn.net/Vercel.html", "tr"},
+    {"https://addressesapi.090227.xyz/CloudFlareYes", "tr"},
+    {"https://www.cloudflare.com/ips-v4", "tr"},
 }
 
 // IPv4 正则表达式
