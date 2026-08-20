@@ -1,10 +1,10 @@
-# 🚀 CloudFlare 优选 IP 自动采集器 (Go)
+# 🚀 优选 IP 自动采集器 (Go)
 
 [![Update IP List](https://github.com/camel52zhang/yxip/actions/workflows/main.yml/badge.svg)](https://github.com/camel52zhang/yxip/actions/workflows/main.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.22-00ADD8?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 每天自动从多个数据源采集 CloudFlare 优选 IPv4 地址，聚合去重后输出 `ip.txt`，供科学上网、CDN 加速等场景使用。
+> 每天自动从多个数据源采集优选 IPv4 地址，聚合去重后输出 `ip.txt`，供科学上网、CDN 加速等场景使用。
 
 ---
 
@@ -26,9 +26,9 @@
 
 ## 📖 项目背景
 
-### 什么是 CloudFlare 优选 IP？
+### 什么是优选 IP？
 
-CloudFlare 在全球拥有数百个边缘节点，但不同 IP 地址在不同运营商（电信、联通、移动）下的延迟和速度差异巨大。**优选 IP** 是指经过测试筛选出的、在当前网络环境下表现最优的 CloudFlare Anycast IP 地址。
+**优选 IP** 是指经过测试筛选出的、在当前网络环境下表现最优的IP地址。
 
 ### 解决的问题
 
