@@ -49,6 +49,10 @@ jobs:
       # ========== 步骤6：提交并推送变更 ==========
       - name: Commit and push changes
         run: |
+          # 清理可能残留的 Git 锁文件
+          rm -f .git/index.lock 2>/dev/null
+          rm -f .git/refs/heads/main.lock 2>/dev/null
+
           # 检查是否有变更
           if [ -n "$(git status --porcelain -- ip.txt go.sum)" ]; then
             git add ip.txt go.sum
