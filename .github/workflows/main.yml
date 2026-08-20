@@ -23,20 +23,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      # ========== 步骤2：同步远程最新代码 ==========
-      - name: Pre-sync repository
+      # ========== 步骤2：设置 Git 用户信息 ==========
+      - name: Configure Git
         run: |
           git config --global user.email "tianshideyou@proton.me"
           git config --global user.name "tianshipapa"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/camel52zhang/yxip.git
-          git pull origin main --rebase
 
       # ========== 步骤3：安装 Go 环境（禁用缓存） ==========
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-          cache: false  # 禁用缓存，避免 go.sum 缺失报错
+          cache: false
 
       # ========== 步骤4：下载依赖并生成 go.sum ==========
       - name: Initialize Go module and download dependencies
@@ -51,16 +49,13 @@ jobs:
       # ========== 步骤6：提交并推送变更 ==========
       - name: Commit and push changes
         run: |
-          # 提交 ip.txt 和自动生成的 go.sum
+          # 检查是否有变更
           if [ -n "$(git status --porcelain -- ip.txt go.sum)" ]; then
             git add ip.txt go.sum
             git commit -m "🔄 Auto update: $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
-
-            # 带重试的推送机制（最多3次）
-            for i in 1 2 3; do
-              git pull --rebase origin main && break || sleep 5
-            done
-
+            
+            # 先拉取远程更新，再推送
+            git pull --rebase origin main
             git push origin HEAD:main
             echo "✅ 更新推送成功"
           else
