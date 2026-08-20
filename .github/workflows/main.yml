@@ -1,59 +1,67 @@
-name: Update IP List
+name: Update CloudFlare Preferred IP List
 
 on:
   schedule:
-    - cron: '0 1,13 * * *'  # 每天UTC 1:00和13:00
-  workflow_dispatch:        # 保留手动触发
+    # 每天 UTC 16:00（北京时间 00:00）运行
+    - cron: '0 16 * * *'
+  workflow_dispatch:  # 支持手动触发
   push:
+    branches:
+      - main
 
 jobs:
   update-ip-list:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 写入权限必须保留
+      contents: write  # 仓库写入权限
 
     steps:
-    # 关键修改点1：带token检出
-    - uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}  # 注入认证信息
-        fetch-depth: 0  # 获取完整提交历史
+      # ========== 步骤1：检出代码 ==========
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-    # 关键修改点2：先同步最新代码
-    - name: Pre-sync repository
-      run: |
-        git config --global user.email "tianshideyou@proton.me"
-        git config --global user.name "tianshipapa"
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/camel52zhang/yxip.git
-        git pull origin main  # 普通拉取最新代码
+      # ========== 步骤2：同步远程最新代码 ==========
+      - name: Pre-sync repository
+        run: |
+          git config --global user.email "tianshideyou@proton.me"
+          git config --global user.name "tianshipapa"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/camel52zhang/yxip.git
+          git pull origin main --rebase
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
+      # ========== 步骤3：安装 Go 环境 ==========
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
 
-    - name: Install dependencies
-      run: |
-        pip install requests beautifulsoup4
+      # ========== 步骤4：下载依赖 ==========
+      - name: Install dependencies
+        run: |
+          go mod tidy
+          go mod download
 
-    - name: Run script
-      run: python ${{ github.workspace }}/collect_ips.py
+      # ========== 步骤5：运行采集脚本 ==========
+      - name: Run IP collector
+        run: go run collect_ips.go
 
-    # 关键修改点3：智能提交逻辑
-    - name: Commit and push changes
-      run: |
-        # 检测文件变化
-        if [ -n "$(git status --porcelain -- ip.txt)" ]; then
-          git add ip.txt
-          git commit -m "Automatic update: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          
-          # 带重试的推送机制
-          for i in {1..3}; do
-            git pull --rebase origin main && break || sleep 5
-          done
-          
-          git push origin HEAD:main
-          echo "✅ 更新推送成功"
-        else
-          echo "🔄 未检测到IP变化"
-        fi
+      # ========== 步骤6：提交并推送变更 ==========
+      - name: Commit and push changes
+        run: |
+          if [ -n "$(git status --porcelain -- ip.txt)" ]; then
+            git add ip.txt
+            git commit -m "🔄 Auto update: $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
+
+            # 带重试的推送机制（最多3次）
+            for i in 1 2 3; do
+              git pull --rebase origin main && break || sleep 5
+            done
+
+            git push origin HEAD:main
+            echo "✅ 更新推送成功"
+          else
+            echo "🔄 未检测到IP变化，跳过提交"
+          fi
