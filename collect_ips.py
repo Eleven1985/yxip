@@ -15,8 +15,13 @@ class TLSAdapter(HTTPAdapter):
 
 # 设置目标 URL 列表
 urls = [
-    'https://monitor.gacjie.cn/page/cloudflare/ipv4.html',
-    'https://ip.164746.xyz'
+    'https://cf.090227.xyz/ct?ips=6',
+    'https://ip.164746.xyz',
+    'https://cf.090227.xyz/cu',
+    'https://cf.090227.xyz/cmcc?ips=8',
+    'https://ipdb.api.030101.xyz/?type=cfv4;proxy',
+    'https://ipdb.api.030101.xyz/?type=bestproxy&country=true',
+    'https://www.wetest.vip/page/cloudflare/address_v4.html'
 ]
 
 # IP 地址正则表达式
