@@ -2,9 +2,8 @@ name: Update CloudFlare Preferred IP List
 
 on:
   schedule:
-    # 每天 UTC 16:00（北京时间 00:00）运行
     - cron: '0 16 * * *'
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -13,52 +12,43 @@ jobs:
   update-ip-list:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 仓库写入权限
+      contents: write
 
     steps:
-      # ========== 步骤1：检出代码 ==========
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      # ========== 步骤2：设置 Git 用户信息 ==========
       - name: Configure Git
         run: |
           git config --global user.email "tianshideyou@proton.me"
           git config --global user.name "tianshipapa"
 
-      # ========== 步骤3：安装 Go 环境（禁用缓存） ==========
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.22'
           cache: false
 
-      # ========== 步骤4：下载依赖并生成 go.sum ==========
       - name: Initialize Go module and download dependencies
         run: |
-          go mod tidy
+          rm -f go.sum          # 删除旧的 go.sum
+          go mod tidy           # 重新生成 go.sum
           go mod download
 
-      # ========== 步骤5：运行采集脚本 ==========
       - name: Run IP collector
         run: go run collect_ips.go
 
-      # ========== 步骤6：提交并推送变更 ==========
       - name: Commit and push changes
         run: |
-          # 清理可能残留的 Git 锁文件
           rm -f .git/index.lock 2>/dev/null
           rm -f .git/refs/heads/main.lock 2>/dev/null
 
-          # 检查是否有变更
           if [ -n "$(git status --porcelain -- ip.txt go.sum)" ]; then
             git add ip.txt go.sum
             git commit -m "🔄 Auto update: $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
-            
-            # 先拉取远程更新，再推送
             git pull --rebase origin main
             git push origin HEAD:main
             echo "✅ 更新推送成功"
